@@ -32,8 +32,7 @@ class Employee(EmployeeBase):
 class AttendanceCreate(BaseModel):
     day: date
     # In Pydantic v2, use `pattern` instead of `regex`.
-    status: str = Field(..., pattern="^(Present|Absent)$")
-
+    status: str = Field(..., regex="^(Present|Absent)$")
 
 class Attendance(BaseModel):
     id: int
