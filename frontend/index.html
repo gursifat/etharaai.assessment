@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>HRMS Lite</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --danger: #dc2626;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 650;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 18px 18px 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+      margin-bottom: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .field input,
+    .field select {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      font-size: 14px;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      outline: 2px solid var(--primary-soft);
+      border-color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    th,
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: #f9fafb;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    tr:hover td {
+      background: #f9fafb;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .pill-present {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .pill-absent {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-bar {
+      min-height: 18px;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .status-bar span {
+      display: inline-block;
+    }
+
+    .status-loading {
+      color: var(--text-muted);
+    }
+
+    .status-error {
+      color: var(--danger);
+    }
+
+    .status-ok {
+      color: #166534;
+    }
+
+    .empty-state {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 10px 0 4px;
+    }
+
+    .small {
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <h1>HRMS Lite</h1>
+      <p>Simple internal tool to manage employees and attendance.</p>
+    </header>
+
+    <div class="grid">
+      <!-- Employee Management -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Employees</div>
+            <div class="card-subtitle">
+              Add, view and delete employees.
+            </div>
+          </div>
+          <button id="refreshEmployeesBtn" class="btn-secondary small">
+            Refresh
+          </button>
+        </div>
+
+        <form id="employeeForm">
+          <div class="field">
+            <label for="employeeId">Employee ID *</label>
+            <input id="employeeId" name="employeeId" placeholder="EMP001" required />
+          </div>
+          <div class="field">
+            <label for="fullName">Full Name *</label>
+            <input id="fullName" name="fullName" placeholder="Jane Doe" required />
+          </div>
+          <div class="field">
+            <label for="email">Email *</label>
+            <input id="email" name="email" type="email" placeholder="jane@example.com" required />
+          </div>
+          <div class="field">
+            <label for="department">Department *</label>
+            <input id="department" name="department" placeholder="Engineering" required />
+          </div>
+        </form>
+
+        <div class="actions">
+          <button id="addEmployeeBtn" class="btn-primary">Save Employee</button>
+        </div>
+
+        <div id="employeeStatus" class="status-bar"></div>
+
+        <div id="employeesContainer"></div>
+      </section>
+
+      <!-- Attendance Management -->
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Attendance</div>
+            <div class="card-subtitle">
+              Mark daily attendance and see summary.
+            </div>
+          </div>
+        </div>
+
+        <form id="attendanceForm">
+          <div class="field">
+            <label for="attEmployeeId">Employee ID *</label>
+            <input id="attEmployeeId" name="attEmployeeId" placeholder="EMP001" required />
+          </div>
+          <div class="field">
+            <label for="day">Date *</label>
+            <input id="day" name="day" type="date" required />
+          </div>
+          <div class="field">
+            <label for="status">Status *</label>
+            <select id="status" name="status" required>
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </div>
+        </form>
+
+        <div class="actions">
+          <button id="markAttendanceBtn" class="btn-primary">
+            Mark Attendance
+          </button>
+        </div>
+
+        <div id="attendanceStatus" class="status-bar"></div>
+
+        <div class="actions" style="margin-top: 6px; justify-content: flex-start">
+          <button id="loadAttendanceBtn" class="btn-secondary small">
+            Load Attendance for Employee
+          </button>
+        </div>
+
+        <div id="attendanceSummary" class="small"></div>
+        <div id="attendanceContainer"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Change this to your deployed backend URL when you deploy.
+    const API_BASE_URL = "http://localhost:8001";
+
+    const employeeForm = document.getElementById("employeeForm");
+    const addEmployeeBtn = document.getElementById("addEmployeeBtn");
+    const refreshEmployeesBtn = document.getElementById("refreshEmployeesBtn");
+    const employeeStatus = document.getElementById("employeeStatus");
+    const employeesContainer = document.getElementById("employeesContainer");
+
+    const attendanceForm = document.getElementById("attendanceForm");
+    const markAttendanceBtn = document.getElementById("markAttendanceBtn");
+    const loadAttendanceBtn = document.getElementById("loadAttendanceBtn");
+    const attendanceStatus = document.getElementById("attendanceStatus");
+    const attendanceSummary = document.getElementById("attendanceSummary");
+    const attendanceContainer = document.getElementById("attendanceContainer");
+
+    function setStatus(element, type, message) {
+      element.className = "status-bar";
+      if (!message) {
+        element.textContent = "";
+        return;
+      }
+      if (type === "loading") {
+        element.classList.add("status-loading");
+      } else if (type === "error") {
+        element.classList.add("status-error");
+      } else if (type === "ok") {
+        element.classList.add("status-ok");
+      }
+      element.textContent = message;
+    }
+
+    async function fetchJson(url, options) {
+      const response = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...options,
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const msg =
+          (data && data.detail) ||
+          data?.message ||
+          "Something went wrong. Please try again.";
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    function renderEmployees(employees) {
+      if (!employees || employees.length === 0) {
+        employeesContainer.innerHTML =
+          '<div class="empty-state">No employees yet. Add one above.</div>';
+        return;
+      }
+
+      const rows = employees
+        .map(
+          (emp) => `
+          <tr>
+            <td>${emp.employee_id}</td>
+            <td>${emp.full_name}</td>
+            <td>${emp.email}</td>
+            <td>${emp.department}</td>
+            <td>
+              <button class="btn-danger small" data-emp-id="${emp.employee_id}">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `
+        )
+        .join("");
+
+      employeesContainer.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        `;
+
+      employeesContainer
+        .querySelectorAll("button[data-emp-id]")
+        .forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-emp-id");
+            if (!confirm(`Delete employee ${id}?`)) return;
+            try {
+              setStatus(employeeStatus, "loading", "Deleting employee...");
+              await fetchJson(`${API_BASE_URL}/employees/${id}`, {
+                method: "DELETE",
+              });
+              setStatus(employeeStatus, "ok", "Employee deleted.");
+              await loadEmployees();
+            } catch (err) {
+              setStatus(employeeStatus, "error", err.message);
+            }
+          });
+        });
+    }
+
+    async function loadEmployees() {
+      try {
+        setStatus(employeeStatus, "loading", "Loading employees...");
+        const employees = await fetchJson(`${API_BASE_URL}/employees`);
+        renderEmployees(employees);
+        setStatus(employeeStatus, "ok", "Employees loaded.");
+      } catch (err) {
+        employeesContainer.innerHTML = "";
+        setStatus(employeeStatus, "error", err.message);
+      }
+    }
+
+    addEmployeeBtn.addEventListener("click", async () => {
+      const formData = new FormData(employeeForm);
+      const body = {
+        employee_id: formData.get("employeeId"),
+        full_name: formData.get("fullName"),
+        email: formData.get("email"),
+        department: formData.get("department"),
+      };
+
+      if (!body.employee_id || !body.full_name || !body.email || !body.department) {
+        setStatus(employeeStatus, "error", "Please fill all fields.");
+        return;
+      }
+
+      addEmployeeBtn.disabled = true;
+      try {
+        setStatus(employeeStatus, "loading", "Saving employee...");
+        await fetchJson(`${API_BASE_URL}/employees`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
+        employeeForm.reset();
+        setStatus(employeeStatus, "ok", "Employee saved.");
+        await loadEmployees();
+      } catch (err) {
+        setStatus(employeeStatus, "error", err.message);
+      } finally {
+        addEmployeeBtn.disabled = false;
+      }
+    });
+
+    refreshEmployeesBtn.addEventListener("click", loadEmployees);
+
+    function renderAttendance(attendanceList) {
+      if (!attendanceList || attendanceList.length === 0) {
+        attendanceContainer.innerHTML =
+          '<div class="empty-state">No attendance records yet for this employee.</div>';
+        return;
+      }
+
+      const rows = attendanceList
+        .map(
+          (rec) => `
+          <tr>
+            <td>${rec.day}</td>
+            <td>
+              <span class="pill ${rec.status === "Present" ? "pill-present" : "pill-absent"
+            }">
+                ${rec.status}
+              </span>
+            </td>
+          </tr>
+        `
+        )
+        .join("");
+
+      attendanceContainer.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        `;
+    }
+
+    async function loadAttendance() {
+      const formData = new FormData(attendanceForm);
+      const employeeId = formData.get("attEmployeeId");
+      if (!employeeId) {
+        setStatus(attendanceStatus, "error", "Please enter Employee ID.");
+        return;
+      }
+
+      try {
+        setStatus(attendanceStatus, "loading", "Loading attendance...");
+        const attendanceList = await fetchJson(
+          `${API_BASE_URL}/employees/${employeeId}/attendance`
+        );
+        renderAttendance(attendanceList);
+
+        const summary = await fetchJson(
+          `${API_BASE_URL}/employees/${employeeId}/attendance/summary`
+        );
+        attendanceSummary.innerHTML = `
+            <div>
+              <strong>${summary.full_name}</strong> (${summary.employee_id})<br />
+              Present: ${summary.total_present_days} days,
+              Absent: ${summary.total_absent_days} days
+            </div>
+          `;
+
+        setStatus(attendanceStatus, "ok", "Attendance loaded.");
+      } catch (err) {
+        attendanceContainer.innerHTML = "";
+        attendanceSummary.textContent = "";
+        setStatus(attendanceStatus, "error", err.message);
+      }
+    }
+
+    markAttendanceBtn.addEventListener("click", async () => {
+      const formData = new FormData(attendanceForm);
+      const employeeId = formData.get("attEmployeeId");
+      const day = formData.get("day");
+      const status = formData.get("status");
+
+      if (!employeeId || !day || !status) {
+        setStatus(attendanceStatus, "error", "Please fill all fields.");
+        return;
+      }
+
+      markAttendanceBtn.disabled = true;
+      try {
+        setStatus(attendanceStatus, "loading", "Saving attendance...");
+        await fetchJson(`${API_BASE_URL}/employees/${employeeId}/attendance`, {
+          method: "POST",
+          body: JSON.stringify({ day, status }),
+        });
+        setStatus(attendanceStatus, "ok", "Attendance marked.");
+        await loadAttendance();
+      } catch (err) {
+        setStatus(attendanceStatus, "error", err.message);
+      } finally {
+        markAttendanceBtn.disabled = false;
+      }
+    });
+
+    loadAttendanceBtn.addEventListener("click", loadAttendance);
+
+    loadEmployees();
+  </script>
+</body>
+
+</html>
